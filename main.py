@@ -2,29 +2,34 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import cv2
 
 # Set the title of the web app
-st.title('Basic Streamlit App')
+st.title('Image Processing with Streamlit')
 
 # Add some text
-st.write('Welcome to this simple Streamlit app!')
+st.write('Welcome to this simple image processing app!')
 
-# Generate some random data for plotting
-x = np.linspace(0, 10, 100)
-y = np.sin(x)
+# Upload Image
+uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
-# Create a DataFrame with the data
-data = pd.DataFrame({'x': x, 'y': y})
+if uploaded_image is not None:
+    # Read the uploaded image
+    image_bytes = uploaded_image.read()
+    image_array = np.frombuffer(image_bytes, np.uint8)
+    image = cv2.imdecode(image_array, 1)
 
-# Display the data table
-st.write('Data Table:')
-st.dataframe(data)
+    # Resize the image to 220x220
+    resized_image = cv2.resize(image, (220, 220))
 
-# Plot the data using matplotlib
-st.write('Data Plot:')
-plt.plot(x, y)
-st.pyplot()
+    # Convert the resized image to grayscale
+    grayscale_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
 
-# Add a footer with some additional text
-st.write('This is a basic example of a Streamlit app.')
-st.write('Feel free to modify and extend it for your own projects!')
+    # Apply Canny edge detection
+    edges = cv2.Canny(grayscale_image, threshold1=100, threshold2=200)
+
+    # Display the uploaded image
+    st.image(resized_image, channels="BGR", caption="Uploaded Image (Resized to 220x220)")
+
+    # Display the Canny edge-detected image
+    st.image(edges, caption="Canny Edge Detection Result")
